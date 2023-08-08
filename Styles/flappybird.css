@@ -1,0 +1,10 @@
+
+body {
+  font-family: 'Gruppo', sans-serif;
+  font-family: 'Tektur', cursive;
+  text-align: center;
+}
+
+#board {
+  background-image: url("../Images/flappybirdbg.png");
+}
