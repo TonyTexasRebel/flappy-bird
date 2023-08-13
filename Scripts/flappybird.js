@@ -30,6 +30,9 @@ let bottomPipeImg;
 let velocityX = -5;
 let velocityY = 0;
 
+let gameOver = false;
+let score = 0;
+
 window.onload = function() {
 
   board = document.getElementById("board");
@@ -53,29 +56,72 @@ window.onload = function() {
 
   requestAnimationFrame(update);
   setInterval(placePipes, 1100);
+
+  //event listeners
+
   document.addEventListener("keydown", moveBird);
   document.addEventListener("keyup", stopBird);
+  document.addEventListener("keydown", resetGame);
 
 }
 
 
 function update() {
   requestAnimationFrame(update);
+  if (gameOver === true) {
+    velocityX = 0;
+    gameOverDrop();
+    if (bird.y - 10 > boardHeight) {
+      return;
+    }
+  }
   context.clearRect(0, 0, board.width, board.height);
-  bird.y = bird.y + velocityY;
+  bird.y = Math.max(bird.y + velocityY, 0);
   context.drawImage(birdImg, bird.x, bird.y, bird.height, bird.width);
 
+  //pipes
 
   for (let i = 0; i < pipeArray.length; i++) {
     let pipe = pipeArray[i];
     pipe.x = pipe.x + velocityX;
     context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
+
+    detectCollision(bird, pipe);
+    if (pipe.passed === false && bird.x > pipe.x + pipeWidth/2) {
+      score = score + 0.5;
+      pipe.passed = true;
+    }
+  }
+
+  if (bird.y > boardHeight) {
+    gameOver = true;
+  }
+
+  while(pipeArray.length > 0 && pipeArray[0].x < 0 - pipeWidth) {
+    pipeArray.shift();
+  }
+
+  //score
+
+  context.fillStyle = 'white';
+  context.font = '45px sans-serif';
+  context.fillText(score, 5, 45);
+
+  //game over text
+  if (gameOver === true) {
+    context.fillText('Game Over', 5, 90);
+    context.fillText('R to restart', 5, 200, 140);
   }
 
 }
 
+//functions
+
 function placePipes() {
   let randomPipeY = pipeY - boardHeight/4 - Math.random()*(pipeHeight/2);
+  if (gameOver === true) {
+    return;
+  }
 
   let topPipe = {
     img : topPipeImg,
@@ -100,8 +146,7 @@ function placePipes() {
 }
 
 function moveBird(event) {
-  console.log(event);
-  if (event.key === " " || event.key === "w") {
+  if (event.key === "w") {
     velocityY = -6;
 
   } else if (event.key === "s") {
@@ -117,4 +162,30 @@ function stopBird (event) {
   }
 }
 
+function detectCollision (bird, pipe) {
+  if (bird.x < pipe.x + pipe.width &&
+      bird.x + bird.width > pipe.x &&
+      bird.y < pipe.y + pipe.height &&
+      bird.y + bird.height > pipe.y) {
+        
+    gameOver = true;
+  }
+}
 
+
+function gameOverDrop() {
+  for (let i = 0; i < 22; i++) {
+    bird.y = bird.y + 0.5;
+  }
+}
+
+
+function resetGame(event) {
+  if (event.code === 'KeyR' && gameOver === true) {
+    bird.y = birdY;
+    score = 0;
+    velocityX = -5;
+    pipeArray = [];
+    gameOver = false;
+  }
+}

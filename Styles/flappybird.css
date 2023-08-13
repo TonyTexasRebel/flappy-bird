@@ -8,3 +8,11 @@ body {
 #board {
   background-image: url("../Images/flappybirdbg.png");
 }
+
+#info-text {
+  text-align: center;
+  position: relative;
+  width: 400px;
+  bottom: 600px;
+  left: 350px;
+}
